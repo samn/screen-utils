@@ -1,15 +1,10 @@
 #! /bin/bash
 # TODO:
-# - option to create missing windows
-#       actually, this is a bug
-#       it should ensure that all windows requested
-#       are available.
-#
 # - Should clear the current line before sending a command
 #   since there could be junk on the command line.
 
 function print_usage() {
-    echo "$0 -S <screen_name> -w <windows,> <-c <command> || -r>"
+    echo "$0 -S <screen_name> [-C number of windows] -w <windows,> <-c <command> || -r>"
     echo "Send a command to multiple windows of a Screen session"
     echo "Required Params:"
     echo "-S the name of the screen to affect"
@@ -17,14 +12,18 @@ function print_usage() {
     echo "One of the following"
     echo "-c the command to send to each window"
     echo "-r read stdin and send to each window"
+    echo "Optional Params:"
+    echo "-C how many windows to initialize. (initializes a new session)"
 }
 
 NAME=
 WINDOWS=
 COMMAND=
 READ=
+SHOULD_INITIALIZE=
+INITIALIZE=
 
-while getopts ":S:w:c:r" OPTION; do
+while getopts ":S:w:c:rC:" OPTION; do
     case $OPTION in 
         S)
             NAME=$OPTARG
@@ -38,6 +37,10 @@ while getopts ":S:w:c:r" OPTION; do
         r)
             READ=true
             ;;
+        C)
+            SHOULD_INITIALIZE=true
+            INITIALIZE=$OPTARG
+            ;;
         ?)
             print_usage
             exit
@@ -45,17 +48,26 @@ while getopts ":S:w:c:r" OPTION; do
     esac
 done
 
-if [[ -z "$NAME" ]] || [[ -z "$WINDOWS" ]] || [ -z "$COMMAND" -a -z "$READ" ] || [ -n "$COMMAND" -a -n "$READ" ]
-then
+if [[ -z "$NAME" ]] || [[ -z "$WINDOWS" ]] || [ -z "$COMMAND" -a -z "$READ" ] || 
+[ -n "$COMMAND" -a -n "$READ" ] || [ -n "$SHOULD_INITIALIZE" -a -z "$INITIALIZE" ] ; then
     print_usage
     exit
 fi
 
-# check that a screen session with name $NAME exists
-screen -S $NAME -X -p 0 wall "$0 is running on windows $WINDOWS"
-if [[ $? -ne 0 ]] ; then
-    echo "Error: Screen with name $NAME not found"
-    exit
+if [[ -n "$SHOULD_INITIALIZE" ]] ; then
+    # create a new, detatched, session
+    screen -S $NAME -dm
+    # and open up some windows
+    for a in `seq 1 $INITIALIZE`; do
+        screen -S $NAME -X screen $a
+    done
+else
+    # check that a screen session with name $NAME exists
+    screen -S $NAME -X -p 0 wall "$0 is running on windows $WINDOWS"
+    if [[ $? -ne 0 ]] ; then
+        echo "Error: Screen with name $NAME not found"
+        exit
+    fi
 fi
 
 function run_on_screen() {
