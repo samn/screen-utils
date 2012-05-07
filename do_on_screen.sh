@@ -13,7 +13,7 @@ function print_usage() {
     echo "-c the command to send to each window"
     echo "-r read stdin and send to each window"
     echo "Optional Params:"
-    echo "-C how many windows to initialize. (initializes a new session)"
+    echo "-C initialize a new screen session. Specify how many windows it should have."
 }
 
 NAME=
@@ -58,8 +58,10 @@ if [[ -n "$SHOULD_INITIALIZE" ]] ; then
     # create a new, detatched, session
     screen -S $NAME -dm
     # and open up some windows
-    for a in `seq 1 $INITIALIZE`; do
+    a=1
+    while [[ $a -lt $INITIALIZE ]] ; do
         screen -S $NAME -X screen $a
+        a=$((a+1))
     done
 else
     # check that a screen session with name $NAME exists
