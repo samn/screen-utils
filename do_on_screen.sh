@@ -4,7 +4,7 @@
 #   since there could be junk on the command line.
 
 function print_usage() {
-    echo "$0 -S <screen_name> [-C number of windows] -w <windows,> <-c <command> || -r>"
+    echo "$0 -S <screen_name> [-C number of windows] [-w <windows,>] [-c <command> || -r] [-n <window name>]"
     echo "Send a command to multiple windows of a Screen session"
     echo "Required Params:"
     echo "-S the name of the screen to affect"
@@ -12,6 +12,8 @@ function print_usage() {
     echo "One of the following"
     echo "-c the command to send to each window"
     echo "-r read stdin and send to each window"
+    echo "-n set the title of windows to the param. Can be used with -c or -r"
+    echo "Both -c & -r can't be used at the same time."
     echo "Optional Params:"
     echo "-C initialize a new screen session. Specify how many windows it should have."
 }
@@ -20,10 +22,10 @@ NAME=
 WINDOWS=
 COMMAND=
 READ=
-SHOULD_INITIALIZE=
 INITIALIZE=
+WINDOW_NAME=
 
-while getopts ":S:w:c:rC:" OPTION; do
+while getopts ":S:w:c:rC:n:" OPTION; do
     case $OPTION in 
         S)
             NAME=$OPTARG
@@ -38,8 +40,10 @@ while getopts ":S:w:c:rC:" OPTION; do
             READ=true
             ;;
         C)
-            SHOULD_INITIALIZE=true
             INITIALIZE=$OPTARG
+            ;;
+        n)
+            WINDOW_NAME=$OPTARG
             ;;
         ?)
             print_usage
@@ -48,13 +52,13 @@ while getopts ":S:w:c:rC:" OPTION; do
     esac
 done
 
-if [[ -z "$NAME" ]] || [[ -z "$WINDOWS" ]] || [ -z "$COMMAND" -a -z "$READ" ] || 
-[ -n "$COMMAND" -a -n "$READ" ] || [ -n "$SHOULD_INITIALIZE" -a -z "$INITIALIZE" ] ; then
+if [[ -z "$NAME" ]] || [[ -z "$WINDOWS" ]] || [ -z "$COMMAND" -a -z "$READ" -a -z "$WINDOW_NAME" ] || 
+[ -n "$COMMAND" -a -n "$READ" ] ; then
     print_usage
     exit
 fi
 
-if [[ -n "$SHOULD_INITIALIZE" ]] ; then
+if [[ -n "$INITIALIZE" ]] ; then
     # create a new, detatched, session
     screen -S $NAME -dm
     # and open up some windows
@@ -88,5 +92,10 @@ if [[ -n "$READ" ]] ; then
 fi
 
 for w in ${WINDOWS//,/ }; do
-    run_on_screen $NAME $w $COMMAND
+    if [[ -n "$WINDOW_NAME" ]] ; then
+        screen -S $NAME -X -p $w title $WINDOW_NAME
+    fi
+    if [[ -n "$COMMAND" ]] ; then
+        run_on_screen $NAME $w $COMMAND
+    fi
 done
