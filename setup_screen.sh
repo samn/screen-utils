@@ -93,7 +93,7 @@ function parse_and_run_line() {
 
 if [[ -n "$SCRIPT_NAME" ]] ; then
     NUM_WINDOWS=`head -n 1 "$SCRIPT_NAME"`
-    if [[ "$NUM_WINDOWS"  != ?(+|-)+([0-9]) ]] ; then
+    if [[ ! "$NUM_WINDOWS"  =~ [0-9] ]] ; then
         exit_with_parse_error "first line should be number of windows" $NUM_WINDOWS
     fi
 
