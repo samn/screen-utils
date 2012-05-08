@@ -12,7 +12,7 @@ function print_usage() {
     echo "One of the following"
     echo "-c the command to send to each window"
     echo "-r read stdin and send to each window"
-    echo "-n set the title of windows to the param. Can be used with -c or -r"
+    echo "-n set the title of windows to the param. Can be used without -c or -r"
     echo "Both -c & -r can't be used at the same time."
     echo "Optional Params:"
     echo "-C initialize a new screen session. Specify how many windows it should have."

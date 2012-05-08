@@ -6,8 +6,7 @@ function print_usage() {
     echo "$0: screen_name <script_file>"
     echo "Run script_file on screen_name"
     echo "If script_file isn't passsed, commands will be read off stdin"
-    echo "A new screen session with the name screen_name will"
-    echo "be created if it doesn't exit."
+    echo "A new screen session with the name screen_name will be created."
 }
 
 function print_dsl_spec() {
