@@ -1,4 +1,6 @@
 #! /bin/bash
+# TODO: multi pass? so can validate a script before executing
+# TODO: debug output, the command and windows it will affect
 
 function print_usage() {
     echo "$0: screen_name <script_file>"
@@ -34,7 +36,6 @@ if [[ $? -ne 0 ]] ; then
     exit 1
 fi
 
-# TODO: line numbers
 function exit_with_parse_error() {
     error="$1"
     line_text="$2"
@@ -53,10 +54,10 @@ function parse_and_run_line() {
     if [[ "${#line[@]}" -lt 2 ]] ; then
         exit_with_parse_error "malformed line, missing command" "${line[@]}"
     fi
-    windows="${line[0]}"
+    windows="${line[0]}" # TODO: validate all are numbers
     case "${line[1]}" in
         -r)
-            # TODO: migrate read prompt to do_on_screen?
+            # TODO: migrate read prompt to do_on_screen.sh?
             if [[ -n "${line[@]:2}" ]] ; then
                 prompt="${line[@]:2} "
             fi
@@ -91,10 +92,10 @@ function parse_and_run_line() {
     unset command ERROR create
 }
 
-if [[ -n "$SCRIPT_NAME" ]] ; then
+if [[ -n "$SCRIPT_NAME" ]] ; then # load script from file
     NUM_WINDOWS=`head -n 1 "$SCRIPT_NAME"`
     if [[ ! "$NUM_WINDOWS"  =~ [0-9] ]] ; then
-        exit_with_parse_error "first line should be number of windows" $NUM_WINDOWS
+        exit_with_parse_error "first line should be the number of windows" $NUM_WINDOWS
     fi
 
     line_num=2
@@ -102,17 +103,17 @@ if [[ -n "$SCRIPT_NAME" ]] ; then
         parse_and_run_line $line
         line_num=$((line_num+1))
     done
-#else # TODO: read a script off stdin
-#   line_num=1
-#    while read line; do
-#        if [[ $line_num -eq 1 ]] ; then
-#            NUM_WINDOWS=$line
-#            if [[ "$NUM_WINDOWS"  != ?(+|-)+([0-9]) ]] ; then
-#                exit_with_parse_error "first line should be number of windows" $line
-#            fi
-#        else
-#            parse_and_run_line $line
-#        fi
-#       line_num=$((line_num+1))
-#    done
+else # accept script from stdin
+   line_num=1
+    while read line; do
+        if [[ $line_num -eq 1 ]] ; then
+            NUM_WINDOWS=$line
+            if [[ "$NUM_WINDOWS"  != ?(+|-)+([0-9]) ]] ; then
+                exit_with_parse_error "first line should be the number of windows" $line
+            fi
+        else
+            parse_and_run_line $line
+        fi
+       line_num=$((line_num+1))
+    done
 fi
