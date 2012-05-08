@@ -39,12 +39,12 @@ function exit_with_parse_error() {
     error="$1"
     line_text="$2"
     echo "Error: $error"
-    print_dsl_spec
     if [[ -n "$line_text" ]] ; then
         echo "Line $line_num >>"
         echo "$line_text"
         echo "<<"
     fi
+    print_dsl_spec
     exit 1
 }
 
@@ -81,7 +81,7 @@ function parse_and_run_line() {
             ;;
     esac
     if [[ -n "$ERROR" ]] ; then
-        exit_with_parse_error $ERROR "${line[@]}"
+        exit_with_parse_error "${ERROR[@]}" "${line[@]}"
     fi
 
     if [[ $line_num -eq 2 ]] ; then # first line is # of windows
