@@ -107,7 +107,7 @@ else # accept script from stdin
     while read line; do
         if [[ $line_num -eq 1 ]] ; then
             NUM_WINDOWS=$line
-            if [[ "$NUM_WINDOWS"  != ?(+|-)+([0-9]) ]] ; then
+            if [[ ! "$NUM_WINDOWS" =~ [0-9] ]] ; then
                 exit_with_parse_error "first line should be the number of windows" $line
             fi
         else
