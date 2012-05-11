@@ -19,7 +19,7 @@ function print_dsl_spec() {
     echo "3 -n alice # window 3 will be named alice"
 }
 
-DO_ON_SCREEN="do_on_screen.sh"
+DO_ON_SCREEN="./do_on_screen.sh"
 SCREEN_NAME=$1
 SCRIPT_NAME=$2
 
@@ -31,7 +31,7 @@ fi
 
 which $DO_ON_SCREEN &>/dev/null
 if [[ $? -ne 0 ]] ; then
-    echo "Error: can't find $DO_ON_SCREEN in path"
+    echo "Error: can't find $DO_ON_SCREEN"
     exit 1
 fi
 
